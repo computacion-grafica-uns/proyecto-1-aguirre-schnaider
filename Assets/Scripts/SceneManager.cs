@@ -4,19 +4,51 @@ using UnityEngine;
 using System.IO;
 using System.Globalization;
 using System;
+using Unity.VisualScripting;
 
 
 
 
-public class FileReader : MonoBehaviour
+public class SceneManager : MonoBehaviour
 {
-    private float vertminx, vertminy, vertminz;
-    private float vertmaxx, vertmaxy, vertmaxz;
-    public string objFileName = "paredCorta.obj"; // nombre del archivo dentro de /Assets/Models
+    
+    //objetos agregados
+    GameObject obj;
+
+    //objeto camara
+    private GameObject miCamara;
+    int camaraIndex = 0;
+
+    //Vectores modelMatrix
+    private Vector3 newPosition;
+    private Vector3 newRotation;
+    private Vector3 newScale;
+    Matrix4x4 modelMatrix;
+
+    //vectores viewMatrix, cada camara tiene sus propios vectores
+    Vector3 fp_pos = new Vector3(4f, 1f, 0f);
+    Vector3 fp_forward = new Vector3(-1f, 0f, 0f);
+    Vector3 fp_right = new Vector3(0f, 0f, 1f);
+    Vector3 orb_pos = new Vector3(5f, 0f, 0f);
+    Vector3 orb_target = new Vector3(0f, 0f, 0f);
+    Vector3 orb_right = new Vector3(0f, 0f, 1f);
+    Matrix4x4 rotY;
+
+    //configuracion de projectionMatrix
+    float fov = 90;
+    float aspectRatio = 16 / (float)9;
+    float nearClipPlane = 0.1f;
+    float farClipPlane = 1000;
+
+    
+
+   
 
     void Start()
     {
-        string path = Application.dataPath + "/Models/" + objFileName;
+        InitializeCamera();
+
+        string path = Application.dataPath + "/Models/bed1.obj";
 
         if (!File.Exists(path))
         {
@@ -24,241 +56,243 @@ public class FileReader : MonoBehaviour
             return;
         }
 
-        GameObject obj = new GameObject("ObjetoImportado");
+        obj = new GameObject("ObjetoImportado");
         obj.AddComponent<MeshFilter>();
         obj.AddComponent<MeshRenderer>();
 
-        Parse(obj, path);
-
-        // Material básico
-        Material mat = new Material(Shader.Find("Standard"));
-        obj.GetComponent<MeshRenderer>().material = mat;
-
-        // Lo centro en (0,0,0)
-        obj.transform.position = Vector3.zero;
+        ObjParser.Parse(obj, path);
+        CreateMaterial(obj);
+        // Defino posición
+        newPosition = new Vector3(0, 0, 0); //definimos una traslación
+        newRotation = new Vector3(0, 0, 0); //rotamos 45 grados en el eje y
+        newScale = new Vector3(1, 1, 1); //definimos un escalado
+        recalcularMatrices(obj);
     }
 
-    void Parse(GameObject obj, string path)
-    {
-        StreamReader reader = new StreamReader(path);
-        string fileData = reader.ReadToEnd();
-        reader.Close();
-        //divido el achivo en lineas con el split
-        string[] lines = fileData.Split('\n');
-        //lista de vertices
-        List<Vector3> vertices = new List<Vector3>();
-        //listas de salida
-        List<int> triangulos = new List<int>();
-        List<int> lista_vt = new List<int>();
-        List<int> lista_vn = new List<int>();
-
-        // Listas auxiliares para las lineas F
-        List<int> vIndices = new List<int>(); // guarda los indices de triangulos
-        List<int> vtIndices = new List<int>(); // guarda los indices de textura
-        List<int> vnIndices = new List<int>(); //guarda los indices de normales
-        bool flag = true;
-        for (int k = 0; k < lines.Length; k++)
-        {
-            if (lines[k].StartsWith("v "))
-            {
-                //elimino posibles espacios al inicio y separo por los espacios
-                // .trim quita espacios al inicio/fin
-                string[] tokens = lines[k].Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                //Parseo directo de los tres componentes
-                float x = float.Parse(tokens[1], CultureInfo.InvariantCulture);
-                float y = float.Parse(tokens[2], CultureInfo.InvariantCulture);
-                float z = float.Parse(tokens[3], CultureInfo.InvariantCulture);
-                // actualizo el bounding-box
-                if (flag)
-                {
-                    flag = false;
-                    vertminx = vertmaxx = x;
-                    vertminy = vertmaxy = y;
-                    vertminz = vertmaxz = z;
-                }
-                else
-                {
-                    vertminx = Math.Min(vertminx, x);
-                    vertmaxx = Math.Max(vertmaxx, x);
-                    vertminy = Math.Min(vertminy, y);
-                    vertmaxy = Math.Max(vertmaxy, y);
-                    vertminz = Math.Min(vertminz, z);
-                    vertmaxz = Math.Max(vertmaxz, z);
-                }
-                //Almaceno el vertice
-                vertices.Add(new Vector3(x, y, z));
-            }
-            //SI COMIENZA CON F
-            else if (lines[k].StartsWith("f "))
-            {
-                //reinicio las listas auxiliares de v, vt, vn
-                vIndices.Clear();
-                vtIndices.Clear();
-                vnIndices.Clear();
-                //Separo por espacios quitando tokens vacios
-                string[] tokens = lines[k].Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                //Para cada token omito el primero que es "f"
-                //si justo esta vacio completo con un -1 e igualmente ya le resto 1 porque los vertices en obj comienzan con 1 (chequear)
-                for (int t = 1; t < tokens.Length; t++)
-                {
-                    string[] parts = tokens[t].Split('/');
-                    // v
-                    vIndices.Add(int.Parse(parts[0]) - 1);
-                    // vt
-                    if (parts.Length > 1 && parts[1] != "")
-                        vtIndices.Add(int.Parse(parts[1]) - 1);
-                    else
-                        vtIndices.Add(-1);
-                    // vn
-                    if (parts.Length > 2)
-                        vnIndices.Add(int.Parse(parts[2]) - 1);
-                    else
-                        vnIndices.Add(-1);
-                }
-                //Triangulación “fan” para mas de 3 vertices
-                for (int i = 1; i < vIndices.Count - 1; i++)
-                {
-                    // Agrego el triángulo (0, i, i+1)
-                    triangulos.Add(vIndices[0]);
-                    triangulos.Add(vIndices[i]);
-                    triangulos.Add(vIndices[i + 1]);
-
-                    // Si hay texturas, las agrego igual
-                    if (lista_vt != null && vtIndices[0] != -1)
-                    {
-                        lista_vt.Add(vtIndices[0]);
-                        lista_vt.Add(vtIndices[i]);
-                        lista_vt.Add(vtIndices[i + 1]);
-                    }
-
-                    // Si hay normales, idem
-                    if (lista_vn != null && vnIndices[0] != -1)
-                    {
-                        lista_vn.Add(vnIndices[0]);
-                        lista_vn.Add(vnIndices[i]);
-                        lista_vn.Add(vnIndices[i + 1]);
-                    }
-                }
-            }
-        }
-        //ENCUENTRO LA DIFERENCIA ENTRE VMIN Y VMAX SOBRE 2 PARA LUEGO RESTAR Y CENTRAR CADA VERTICE
-        float restax = (vertminx + vertmaxx) / 2;
-        float restay = (vertminy + vertmaxy) / 2;
-        float restaz = (vertminz + vertmaxz) / 2;
-        for (int j = 0; j < vertices.Count; j++)
-        {
-            Vector3 v = vertices[j];
-            v.x -= restax; //puedo decir v.x entiende que es Coordenadas[0]
-            v.y -= restay;
-            v.z -= restaz;
-            vertices[j] = v;
-        }
-        Mesh mesh = new Mesh();
-        mesh.vertices = vertices.ToArray();
-        mesh.triangles = triangulos.ToArray();
-        mesh.RecalculateNormals(); // importante para que se vea bien con iluminación
-        mesh.RecalculateBounds();
-
-        obj.GetComponent<MeshFilter>().mesh = mesh;
-    }
-}
-/*
-public class SceneManager : MonoBehaviour
-{
-    // Start is called before the first frame update
-    void Start()
-    {
-       
-    }
-
-    // Update is called once per frame
     void Update()
     {
-        
-    }
-
-    void Parse(GameObject obj, string path)
-    {
-        //metodo preliminar que acepta lineas de vertices y caras
-        //asume obj inicializado y mesh creado
-
-
-        //leo contenido del archivo
-        StreamReader reader = new StreamReader(path);
-        string fileData = (reader.ReadToEnd());
-        reader.Close();
-
-
-        //asumo formato correcto del archivo, mesh con triangulos
-        List<Vector3> vertices = new List<Vector3>();
-        List<int> triangulos = new List<int>();
-        
-        string[] lines = fileData.Split('\n');
-        for (int i = 0; i < lines.Length; i++) {
-            if (lines[i].StartsWith("v "))
+        if (Input.GetKeyDown("space"))
+            camaraIndex = (camaraIndex + 1) % 2;
+        else
+        {
+            if (camaraIndex == 0)
             {
-                //formato de vertice es v x y z
-                float[] coordenadas = new float[3]; //guardo como array para poder acceder segun indice
-                int indexInicio = 2;       //la primera letra es conocida
-                int indexFinal=2;
+                //CAMARA PRIMERA PERSONA
+                //Vectores para desplazamiento, sumo el vector foward y el vector right a la posicion
+                fp_forward = fp_forward.normalized;
+                fp_right = fp_right.normalized;
 
-                //posiciono index en la primera letra de la primer coordenada
-                while (lines[i][indexInicio] == ' ')
-                    indexInicio++;
-                indexFinal = indexInicio;
 
-                //guardo cada coordenada como numero
-                for (int j = 0; j < 3; j++) 
+                //anulo componentes y para que solo caminen sobre plano xz
+                fp_pos = fp_pos + new Vector3(Input.GetAxis("Vertical") * 0.01f * fp_forward.x + Input.GetAxis("Horizontal") * 0.01f * fp_right.x,
+                    0,
+                    Input.GetAxis("Vertical") * 0.01f * fp_forward.z + Input.GetAxis("Horizontal") * 0.01f * fp_right.z);
+
+
+                //roto camara, calculo de nuevo los vectores en caso que hayan cambiado por el 
+                float inputY = Input.GetAxis("Mouse Y");
+                float inputX = Input.GetAxis("Mouse X");
+
+                //roto camara verticalmente
+                if ((inputY > 0 && Vector3.Angle(fp_forward, new Vector3(0, 1, 0)) > 25f) ||
+                    (inputY < 0 && Vector3.Angle(fp_forward, new Vector3(0, -1, 0)) > 25f))
                 {
-                    //indexFinal marca el primer espacio o el primer indice out of bounds
-                    while (indexFinal<lines[i].Length && lines[i][indexFinal]!=' ' && lines[i][indexFinal] != '\n' )
-                        indexFinal++;
-
-                    coordenadas[j] = float.Parse(lines[i].Substring(indexInicio, indexFinal - indexInicio ), CultureInfo.InvariantCulture);
-
-                    //salteo espacios hasta la proxima letra
-                    while(lines[i][indexFinal] == ' ')
-                        indexFinal++;
-                    indexInicio = indexFinal;
+                    Debug.Log("Rotando camara");
+                    Quaternion rotVertical = Quaternion.AngleAxis(-300f * Time.deltaTime * inputY, fp_right);
+                    fp_forward = (rotVertical * fp_forward).normalized;
                 }
 
-                vertices.Add(new Vector3(coordenadas[0], coordenadas[1], coordenadas[2]));
-            }else if(lines[i].StartsWith("f "))
-            {
-                //formato de cara es f c1 c2 c3
-                int[] aristas= new int[3]; //guardo como array para poder acceder segun indice
-                int indexInicio = 2;       //la primera letra es conocida
-                int indexFinal = 2;
-
-                //posiciono index en la primera letra de la primera arista
-                while (lines[i][indexInicio] == ' ')
-                    indexInicio++;
-                indexFinal = indexInicio;
-
-                //guardo cada coordenada como numero
-                for (int j = 0; j < 3; j++)
+                //roto camara horizontalmente
+                if (inputX != 0)
                 {
-                    //indexFinal marca el primer espacio o el primer indice out of bounds
-                    while (indexFinal < lines[i].Length && lines[i][indexFinal] != ' ' && lines[i][indexFinal] != '\n')
-                        indexFinal++;
-
-                    aristas[j] = int.Parse(lines[i].Substring(indexInicio, indexFinal - indexInicio)) -1;
-
-                    //salteo espacios hasta la proxima letra
-                    while (indexFinal < lines[i].Length && lines[i][indexFinal] == ' ')
-                        indexFinal++;
-                    indexInicio = indexFinal;
+                    Quaternion rotHorizontal = Quaternion.AngleAxis(300f * Time.deltaTime * inputX, new Vector3(0, 1, 0));
+                    fp_forward = (rotHorizontal * fp_forward).normalized;
+                    fp_right = (rotHorizontal * fp_right).normalized;
                 }
-
-                //agrego los indices de las aristas a la lista de triangulos
-                triangulos.Add(aristas[0]);
-                triangulos.Add(aristas[1]);
-                triangulos.Add(aristas[2]);
             }
-        }
-           
-        obj.GetComponent<MeshFilter>().mesh.vertices = vertices.ToArray();
-        obj.GetComponent<MeshFilter>().mesh.triangles = triangulos.ToArray();   
+            else
+            {
+                //CAMARA ORBITAL
+                //Zoom in o zoom out
+                if(Input.GetKey("left shift") && Vector3.Distance(orb_pos, orb_target)>2f )
+                {
+                    Debug.Log("Zoom in");
+                    orb_pos = orb_pos + (orb_target - orb_pos).normalized * 0.01f;
+                }
+                if (Input.GetKey("left ctrl"))
+                {
+                    Debug.Log("Zoom out");
+                    orb_pos = orb_pos - (orb_target - orb_pos).normalized * 0.01f;
+                }
 
+
+                if (Input.GetAxis("Horizontal") != 0)
+                {
+                    //Rotacion horizontal
+                    orb_right = orb_right.normalized;
+
+                    //matriz con la que roto vectores al rededor del eje y
+                    rotY = new Matrix4x4(
+                        new Vector4(Mathf.Cos(Mathf.Deg2Rad * Input.GetAxis("Horizontal")), 0f, Mathf.Sin(Mathf.Deg2Rad * Input.GetAxis("Horizontal")), 0f),
+                        new Vector4(0f, 1f, 0f, 0f),
+                        new Vector4(-Mathf.Sin(Mathf.Deg2Rad * Input.GetAxis("Horizontal")), 0f, Mathf.Cos(Mathf.Deg2Rad * Input.GetAxis("Horizontal")), 0f),
+                        new Vector4(0f, 0f, 0f, 1f)
+                    );
+                    orb_pos = rotY.MultiplyPoint3x4(orb_pos);
+                    orb_right = rotY.MultiplyPoint3x4(orb_right);
+                }
+
+                if ((Input.GetAxis("Vertical") < 0 && Vector3.Angle((orb_target - orb_pos), new Vector3(0, 1, 0)) > 0.5f) ||
+                    (Input.GetAxis("Vertical") > 0 && Vector3.Angle((orb_target - orb_pos), new Vector3(0, -1, 0)) > 0.5f))
+                {
+                    //Rotacion vertical
+                    Quaternion rotVertical = Quaternion.AngleAxis(300f * Time.deltaTime * Input.GetAxis("Vertical"), orb_right);
+                    orb_pos = (rotVertical * orb_pos);
+                }
+            }
+            recalcularMatrices(obj);
+        }
     }
-}*/
+
+    
+
+
+    private void CreateMaterial(GameObject obj)
+    {
+        //creamos un nuevo material que utiliza el shader que le pasemos por parametro
+        Material newMaterial = new Material(Shader.Find("ShaderBasico"));
+        //asignamos el nuevo material al MeshRenderer
+        obj.GetComponent<MeshRenderer>().material = newMaterial;
+    }
+
+    private Matrix4x4 CreateModelMatrix(Vector3 newPosition, Vector3 newRotation, Vector3 newScale)
+    {
+        Matrix4x4 positionMatrix = new Matrix4x4(
+            //creo cada columna
+            new Vector4(1f, 0f, 0f, newPosition.x),
+            new Vector4(0f, 1f, 0f, newPosition.y),
+            new Vector4(0f, 0f, 1f, newPosition.z),
+            new Vector4(0f, 0f, 0f, 1f)
+        );
+        positionMatrix = positionMatrix.transpose;
+
+        Matrix4x4 rotationMatrixX = new Matrix4x4(
+            new Vector4(1f, 0f, 0f, 0f),
+            new Vector4(0f, Mathf.Cos(newRotation.x), -Mathf.Sin(newRotation.x), 0f),
+            new Vector4(0f, Mathf.Sin(newRotation.x), Mathf.Cos(newRotation.x), 0f),
+            new Vector4(0f, 0f, 0f, 1f)
+        );
+
+        Matrix4x4 rotationMatrixY = new Matrix4x4(
+            new Vector4(Mathf.Cos(newRotation.y), 0f, Mathf.Sin(newRotation.y), 0f),
+            new Vector4(0f, 1f, 0f, 0f),
+            new Vector4(-Mathf.Sin(newRotation.y), 0f, Mathf.Cos(newRotation.y), 0f),
+            new Vector4(0f, 0f, 0f, 1f)
+        );
+
+        Matrix4x4 rotationMatrixZ = new Matrix4x4(
+            new Vector4(Mathf.Cos(newRotation.z), -Mathf.Sin(newRotation.z), 0f, 0f),
+            new Vector4(Mathf.Sin(newRotation.z), Mathf.Cos(newRotation.z), 0f, 0f),
+            new Vector4(0f, 0f, 1f, 0f),
+            new Vector4(0f, 0f, 0f, 1f)
+        );
+
+        Matrix4x4 rotationMatrix = rotationMatrixZ * rotationMatrixY * rotationMatrixX;
+        rotationMatrix = rotationMatrix.transpose;
+
+        Matrix4x4 scaleMatrix = new Matrix4x4(
+            new Vector4(newScale.x, 0f, 0f, 0f),
+            new Vector4(0f, newScale.y, 0f, 0f),
+            new Vector4(0f, 0f, newScale.z, 0f),
+            new Vector4(0f, 0f, 0f, 1f)
+        );
+        scaleMatrix = scaleMatrix.transpose;
+
+        Matrix4x4 finalMatrix = positionMatrix;
+        finalMatrix *= rotationMatrix;
+        finalMatrix *= scaleMatrix;
+        return (finalMatrix);
+    }
+
+    private void recalcularMatrices(GameObject obj)
+    {
+        //calculamos la matriz de modelado
+        Matrix4x4 modelMatrix = CreateModelMatrix(newPosition, newRotation, newScale);
+        //le decimos al shader que utilice esta matriz de modelado
+        obj.GetComponent<Renderer>().material.SetMatrix("_ModelMatrix", modelMatrix);
+
+
+        Matrix4x4 viewMatrix;
+        if (camaraIndex == 0)
+            viewMatrix = CreateViewMatrix(fp_pos, fp_forward, fp_right);
+        else viewMatrix = CreateViewMatrixTarget(orb_pos, orb_target, orb_right);
+        obj.GetComponent<Renderer>().material.SetMatrix("_ViewMatrix", viewMatrix);
+
+        Matrix4x4 projectionMatrix = CalculatePerspectiveProjectionMatrix(fov, aspectRatio, nearClipPlane, farClipPlane);
+        obj.GetComponent<Renderer>().material.SetMatrix("_ProjectionMatrix", projectionMatrix);
+    }
+
+    private Matrix4x4 CreateViewMatrix(Vector3 pos, Vector3 forward, Vector3 right)
+    {
+
+        forward = forward.normalized;
+        right = right.normalized;
+        Vector3 up = Vector3.Cross(right, forward).normalized;
+
+
+
+
+        Matrix4x4 viewMatrix = new Matrix4x4(
+            new Vector4(right.x, right.y, right.z, -Vector3.Dot(right, pos)),
+            new Vector4(up.x, up.y, up.z, -Vector3.Dot(up, pos)),
+            new Vector4(-forward.x, -forward.y, -forward.z, Vector3.Dot(forward, pos)),
+            new Vector4(0, 0, 0, 1)
+        );
+        viewMatrix = viewMatrix.transpose;
+
+        return viewMatrix;
+    }
+
+    private Matrix4x4 CreateViewMatrixTarget(Vector3 pos, Vector3 target, Vector3 right)
+    {
+
+        Vector3 forward = (-pos + target).normalized;
+        right = right.normalized;
+        Vector3 up = Vector3.Cross(right, forward).normalized;
+
+        Matrix4x4 viewMatrix = new Matrix4x4(
+            new Vector4(right.x, right.y, right.z, -Vector3.Dot(right, pos)),
+            new Vector4(up.x, up.y, up.z, -Vector3.Dot(up, pos)),
+            new Vector4(-forward.x, -forward.y, -forward.z, Vector3.Dot(forward, pos)),
+            new Vector4(0, 0, 0, 1)
+        );
+        viewMatrix = viewMatrix.transpose;
+
+        return viewMatrix;
+    }
+
+    private Matrix4x4 CalculatePerspectiveProjectionMatrix(float fov, float aspectRatio, float nearClipPlane, float farClipPlane)
+    {
+
+        Matrix4x4 projectionMatrix = new Matrix4x4(
+            new Vector4(1 / (aspectRatio * Mathf.Tan(Mathf.Deg2Rad * fov / 2)), 0f, 0f, 0f),
+            new Vector4(0f, 1 / Mathf.Tan(Mathf.Deg2Rad * fov / 2), 0f, 0f),
+            new Vector4(0f, 0f, (farClipPlane + nearClipPlane) / (nearClipPlane - farClipPlane), 2 * farClipPlane * nearClipPlane / (nearClipPlane - farClipPlane)),
+            new Vector4(0f, 0f, -1f, 0f)
+        );
+        projectionMatrix = projectionMatrix.transpose;
+
+        return projectionMatrix;
+    }
+
+    private void InitializeCamera()
+    {
+        miCamara = new GameObject();
+        miCamara.AddComponent<Camera>();
+        //el fondo es un color solido                                                                                                                                  
+        miCamara.GetComponent<Camera>().clearFlags = CameraClearFlags.SolidColor;
+        //Establecemos el color negro
+        miCamara.GetComponent<Camera>().backgroundColor = Color.black;
+    }
+}
+
