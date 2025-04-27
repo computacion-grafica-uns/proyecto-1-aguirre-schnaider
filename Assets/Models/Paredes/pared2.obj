@@ -1,0 +1,31 @@
+# Modificar el archivo .obj según las nuevas especificaciones
+
+# Nuevas dimensiones:
+# - Altura en Y: 3 (de 0 a 3)
+# - Profundidad en X: 0.5 (de 0 a 0.5)
+# - Largo en Z: 10 (de 0 a 10)
+
+obj_content_modified = """# Pared rectangular centrada en x=0, y=0, de 3 de alto, 0.5 de ancho y 10 de largo
+
+o Pared
+
+v  0.0  0.0  0.0
+v  0.2  0.0  0.0
+v  0.2  3.0  0.0
+v  0.0  3.0  0.0
+
+v  0.0  0.0  12.0
+v  0.2  0.0  12.0
+v  0.2  3.0  12.0
+v  0.0  3.0  12.0
+
+# Caras (de abajo hacia arriba)
+f 1 2 3 4
+f 5 8 7 6
+f 1 5 6 2
+f 2 6 7 3
+f 3 7 8 4
+f 4 8 5 1
+"""
+
+

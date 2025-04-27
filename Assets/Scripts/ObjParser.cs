@@ -120,7 +120,7 @@ public class ObjParser
         }
         //ENCUENTRO LA DIFERENCIA ENTRE VMIN Y VMAX SOBRE 2 PARA LUEGO RESTAR Y CENTRAR CADA VERTICE
         float restax = (vertminx + vertmaxx) / 2;
-        float restay = (vertminy + vertmaxy) / 2;
+        float restay = vertminy;
         float restaz = (vertminz + vertmaxz) / 2;
         for (int j = 0; j < vertices.Count; j++)
         {

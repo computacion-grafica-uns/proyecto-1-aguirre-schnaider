@@ -15,6 +15,11 @@ public class SceneManager : MonoBehaviour
     //objetos agregados
     private GameObject bed;
     private GameObject sofa;
+    private GameObject pared1;
+    private GameObject pared2;
+    private GameObject pared3;
+    private GameObject pared4;
+
     private string path;
 
     //objeto camara
@@ -55,8 +60,8 @@ public class SceneManager : MonoBehaviour
             return;
         }
         bed = new GameObject("bed");
-        InicializarObject(bed, path, new Vector3(0f, 0f, 0f), new Vector3(0f, 0f, 0f), new Vector3(1f, 1f, 1f), Color.red);
-
+        InicializarObject(bed, path, new Vector3(-0.5f, 0f, 0f), new Vector3(0f, Mathf.Deg2Rad * 90f, 0f), new Vector3(0.7f, 0.7f, 0.7f), Color.red);
+        /*
         //importo sillon a la escena
         path = Application.dataPath + "/Models/sofa/sofa.obj";
         if (!File.Exists(path))
@@ -66,9 +71,54 @@ public class SceneManager : MonoBehaviour
         }
         sofa = new GameObject("sofa");
         InicializarObject(sofa, path, new Vector3(3f, 0f, 3f), new Vector3(0f, 0f, 0f), new Vector3(1f, 1f, 1f), Color.red);
+        */
+        //importo las paredes
+
+        //PARED 1
+        path = Application.dataPath + "/Models/Paredes/pared1_y_3.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        pared1 = new GameObject("pared1_y_3");
+        InicializarObject(pared1, path, new Vector3(0f, 0f, -6f), new Vector3(0f, Mathf.Deg2Rad * 90f, 0f), new Vector3(1f, 1f, 1f), Color.gray);
+       
+        //PARED 2
+        path = Application.dataPath + "/Models/Paredes/pared2.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        pared2 = new GameObject("pared2");
+        InicializarObject(pared2, path, new Vector3(-3f, 0f, 0f), new Vector3(0f, 0f, 0f), new Vector3(1f, 1f, 1f), Color.grey);
+
+        //PARED 3
+        path = Application.dataPath + "/Models/Paredes/pared1_y_3.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        pared3 = new GameObject("pared3");
+        InicializarObject(pared3, path, new Vector3(0f, 0f, 6f), new Vector3(0f, Mathf.Deg2Rad * 90f, 0f), new Vector3(1f, 1f, 1f), Color.grey);
+
+        //PARED 4
+        path = Application.dataPath + "/Models/Paredes/pared4.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        pared4 = new GameObject("pared4");
+        InicializarObject(pared4, path, new Vector3(3f, 0f, 0f), new Vector3(0f, Mathf.Deg2Rad*180f, 0f), new Vector3(1f, 1f, 1f), Color.grey);
+
     }
 
-    
+
+
+
     void Update()
     {
         if (Input.GetKeyDown("space"))
@@ -157,7 +207,11 @@ public class SceneManager : MonoBehaviour
     private void RecalcularMatricesVistaAll()
     {
         RecalcularMatricesVista(bed);
-        RecalcularMatricesVista(sofa);
+      //  RecalcularMatricesVista(sofa);
+        RecalcularMatricesVista(pared1);
+        RecalcularMatricesVista(pared2);
+        RecalcularMatricesVista(pared3);
+        RecalcularMatricesVista(pared4);
 
     }
     private void InicializarObject(GameObject obj, string path, Vector3 newPosition, Vector3 newRotation, Vector3 newScale, Color color)
