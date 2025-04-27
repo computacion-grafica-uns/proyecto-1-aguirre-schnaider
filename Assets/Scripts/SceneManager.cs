@@ -40,10 +40,6 @@ public class SceneManager : MonoBehaviour
     float nearClipPlane = 0.1f;
     float farClipPlane = 1000;
 
-    
-
-   
-
     void Start()
     {
         InitializeCamera();
@@ -56,17 +52,17 @@ public class SceneManager : MonoBehaviour
             return;
         }
 
+        // Defino posición
         obj = new GameObject("ObjetoImportado");
         obj.AddComponent<MeshFilter>();
         obj.AddComponent<MeshRenderer>();
-
-        ObjParser.Parse(obj, path);
         CreateMaterial(obj);
-        // Defino posición
+        ObjParser.Parse(obj, path);
+
         newPosition = new Vector3(0, 0, 0); //definimos una traslación
         newRotation = new Vector3(0, 0, 0); //rotamos 45 grados en el eje y
         newScale = new Vector3(1, 1, 1); //definimos un escalado
-        recalcularMatrices(obj);
+        InicializarMatrices(obj, newPosition, newRotation, newScale, new Color(0f, 1f, 0f));
     }
 
     void Update()
@@ -150,13 +146,24 @@ public class SceneManager : MonoBehaviour
                     orb_pos = (rotVertical * orb_pos);
                 }
             }
-            recalcularMatrices(obj);
+            recalcularMatricesVista(obj);
         }
     }
+    private void AsignarColor(GameObject obj, Color color)
+    {
+        if (obj != null)
+        {
+            Mesh mesh = obj.GetComponent<MeshFilter>().mesh;
+            int size = mesh.vertices.Length;
+            Color[] colors = new Color[size];
+            for (int i = 0; i < size; i++)
+            {
+                colors[i] = color;
+            }
 
-    
-
-
+            mesh.colors = colors;
+        }
+    }
     private void CreateMaterial(GameObject obj)
     {
         //creamos un nuevo material que utiliza el shader que le pasemos por parametro
@@ -214,13 +221,26 @@ public class SceneManager : MonoBehaviour
         return (finalMatrix);
     }
 
-    private void recalcularMatrices(GameObject obj)
+
+    private void recalcularMatricesVista(GameObject obj)
+    {
+
+        Matrix4x4 viewMatrix;
+        if (camaraIndex == 0)
+            viewMatrix = CreateViewMatrix(fp_pos, fp_forward, fp_right);
+        else viewMatrix = CreateViewMatrixTarget(orb_pos, orb_target, orb_right);
+        obj.GetComponent<Renderer>().material.SetMatrix("_ViewMatrix", viewMatrix);
+
+        Matrix4x4 projectionMatrix = CalculatePerspectiveProjectionMatrix(fov, aspectRatio, nearClipPlane, farClipPlane);
+        obj.GetComponent<Renderer>().material.SetMatrix("_ProjectionMatrix", projectionMatrix);
+    }
+    private void InicializarMatrices(GameObject obj, Vector3 newPosition, Vector3 newRotation, Vector3 newScale, Color color)
     {
         //calculamos la matriz de modelado
         Matrix4x4 modelMatrix = CreateModelMatrix(newPosition, newRotation, newScale);
         //le decimos al shader que utilice esta matriz de modelado
         obj.GetComponent<Renderer>().material.SetMatrix("_ModelMatrix", modelMatrix);
-
+        AsignarColor(obj, color);
 
         Matrix4x4 viewMatrix;
         if (camaraIndex == 0)
