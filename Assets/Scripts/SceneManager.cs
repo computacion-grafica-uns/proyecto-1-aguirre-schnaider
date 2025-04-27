@@ -13,7 +13,9 @@ public class SceneManager : MonoBehaviour
 {
     
     //objetos agregados
-    GameObject obj;
+    private GameObject bed;
+    private GameObject sofa;
+    private string path;
 
     //objeto camara
     private GameObject miCamara;
@@ -44,27 +46,29 @@ public class SceneManager : MonoBehaviour
     {
         InitializeCamera();
 
-        string path = Application.dataPath + "/Models/bed1.obj";
 
+        // importo cama a la escena
+        path = Application.dataPath + "/Models/bed/bed1.obj";
         if (!File.Exists(path))
         {
             Debug.LogError("Archivo .obj no encontrado en: " + path);
             return;
         }
+        bed = new GameObject("bed");
+        InicializarObject(bed, path, new Vector3(0f, 0f, 0f), new Vector3(0f, 0f, 0f), new Vector3(1f, 1f, 1f), Color.red);
 
-        // Defino posición
-        obj = new GameObject("ObjetoImportado");
-        obj.AddComponent<MeshFilter>();
-        obj.AddComponent<MeshRenderer>();
-        CreateMaterial(obj);
-        ObjParser.Parse(obj, path);
-
-        newPosition = new Vector3(0, 0, 0); //definimos una traslación
-        newRotation = new Vector3(0, 0, 0); //rotamos 45 grados en el eje y
-        newScale = new Vector3(1, 1, 1); //definimos un escalado
-        InicializarMatrices(obj, newPosition, newRotation, newScale, new Color(0f, 1f, 0f));
+        //importo sillon a la escena
+        path = Application.dataPath + "/Models/sofa/sofa.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        sofa = new GameObject("sofa");
+        InicializarObject(sofa, path, new Vector3(3f, 0f, 3f), new Vector3(0f, 0f, 0f), new Vector3(1f, 1f, 1f), Color.red);
     }
 
+    
     void Update()
     {
         if (Input.GetKeyDown("space"))
@@ -146,8 +150,24 @@ public class SceneManager : MonoBehaviour
                     orb_pos = (rotVertical * orb_pos);
                 }
             }
-            recalcularMatricesVista(obj);
+            RecalcularMatricesVistaAll();
         }
+    }
+    
+    private void RecalcularMatricesVistaAll()
+    {
+        RecalcularMatricesVista(bed);
+        RecalcularMatricesVista(sofa);
+
+    }
+    private void InicializarObject(GameObject obj, string path, Vector3 newPosition, Vector3 newRotation, Vector3 newScale, Color color)
+    {
+        // Defino posición
+        obj.AddComponent<MeshFilter>();
+        obj.AddComponent<MeshRenderer>();
+        CreateMaterial(obj);
+        ObjParser.Parse(obj, path);
+        InicializarMatrices(obj, newPosition, newRotation, newScale, color);
     }
     private void AsignarColor(GameObject obj, Color color)
     {
@@ -222,7 +242,7 @@ public class SceneManager : MonoBehaviour
     }
 
 
-    private void recalcularMatricesVista(GameObject obj)
+    private void RecalcularMatricesVista(GameObject obj)
     {
 
         Matrix4x4 viewMatrix;
