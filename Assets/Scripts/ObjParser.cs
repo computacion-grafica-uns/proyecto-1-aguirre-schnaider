@@ -118,6 +118,8 @@ public class ObjParser
 
             }
         }
+        
+        Debug.Log("Dimensiones: "+ (vertmaxx - vertminx) + "x" + (vertmaxy - vertminy) + "x" + (vertmaxz - vertminz));
         //ENCUENTRO LA DIFERENCIA ENTRE VMIN Y VMAX SOBRE 2 PARA LUEGO RESTAR Y CENTRAR CADA VERTICE
         float restax = (vertminx + vertmaxx) / 2;
         float restay = vertminy;
