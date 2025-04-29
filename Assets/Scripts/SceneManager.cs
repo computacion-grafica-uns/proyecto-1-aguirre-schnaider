@@ -23,6 +23,8 @@ public class SceneManager : MonoBehaviour
     private GameObject silla2;
     private GameObject silla3;
     private GameObject silla4;
+    private GameObject armario;
+    private GameObject estante;
     private GameObject heladera;
     private GameObject ducha;
     private GameObject inodoro;
@@ -31,6 +33,9 @@ public class SceneManager : MonoBehaviour
     private GameObject pared2;
     private GameObject pared3;
     private GameObject pared4;
+    private GameObject paredBano;
+    private GameObject piso;
+    private GameObject techo;
 
     private string path;
 
@@ -63,189 +68,14 @@ public class SceneManager : MonoBehaviour
     {
         InitializeCamera();
 
-        //importo las paredes
-
-        //PARED 1
-        path = Application.dataPath + "/Models/Paredes/pared1_y_3.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        pared1 = new GameObject("pared1_y_3");
-        InicializarObject(pared1, path, new Vector3(0f, 0f, -6f), new Vector3(0f, Mathf.Deg2Rad * 90f, 0f), new Vector3(1f, 1f, 1f), Color.gray);
+        //importo objetos a la escena
+        AcomodarParedes();
+        AcomodarLiving();
+        AcomodarCocina();
+        AcomodarBano();
        
-        //PARED 2
-        path = Application.dataPath + "/Models/Paredes/pared2.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        pared2 = new GameObject("pared2");
-        InicializarObject(pared2, path, new Vector3(-3f, 0f, 0f), new Vector3(0f, 0f, 0f), new Vector3(1f, 1f, 1f), Color.grey);
-
-        //PARED 3
-        path = Application.dataPath + "/Models/Paredes/pared1_y_3.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        pared3 = new GameObject("pared3");
-        InicializarObject(pared3, path, new Vector3(0f, 0f, 6f), new Vector3(0f, Mathf.Deg2Rad * 90f, 0f), new Vector3(1f, 1f, 1f), Color.grey);
-
-        //PARED 4
-        path = Application.dataPath + "/Models/Paredes/pared4.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        pared4 = new GameObject("pared4");
-        InicializarObject(pared4, path, new Vector3(3f, 0f, 0f), new Vector3(0f, Mathf.Deg2Rad*180f, 0f), new Vector3(1f, 1f, 1f), Color.grey);
 
 
-        // importo cama a la escena
-        path = Application.dataPath + "/Models/bed/bed1.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        bed = new GameObject("bed");
-        InicializarObject(bed, path, new Vector3(-1.75f, 0f, 2.5f), new Vector3(0f, -Mathf.Deg2Rad*90, 0f), new Vector3(0.85f, 0.85f, 0.85f), Color.red);
-
-        
-        //importo sillon a la escena
-        path = Application.dataPath + "/Models/sofa/sofa.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        sofa = new GameObject("sofa");
-        InicializarObject(sofa, path, new Vector3(-2.37f, 0f, -0.75f), new Vector3(0f, 0f, 0f), new Vector3(0.75f, 0.75f, 0.75f), Color.red);
-
-        //importo bacha cocina
-        path = Application.dataPath + "/Models/KitchenCabinetRounded/KitchenCabinetRounded.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        bacha = new GameObject("bacha");
-        InicializarObject(bacha, path, new Vector3(-1.73f, 0f, -4.69f), new Vector3(0f, -Mathf.Deg2Rad*90, 0f), new Vector3(1f, 1f, 1f), Color.red);
-
-        //importo horno
-        path = Application.dataPath + "/Models/KitchenStoveWithOven/KitchenStoveWithOven.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        horno = new GameObject("horno");
-        InicializarObject(horno, path, new Vector3(-0.10f, 0f, -5.38f), new Vector3(0f, -Mathf.Deg2Rad * 90, 0f), new Vector3(1f, 1f, 1f), Color.blue);
-
-        //importo gabinete cocina
-        path = Application.dataPath + "/Models/KitchenCabinet1/KitchenCabinet1.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        gabineteCocina1 = new GameObject("gabineteCocina");
-        InicializarObject(gabineteCocina1, path, new Vector3(0.88f, 0f, -5.38f), new Vector3(0f, -Mathf.Deg2Rad * 90, 0f), new Vector3(1f, 1f, 1f), Color.cyan);
-
-        //importo heladera
-        path = Application.dataPath + "/Models/Fridge/Fridge.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        heladera = new GameObject("heladera");
-        InicializarObject(heladera, path, new Vector3(1.79f, 0f, -5.39f), new Vector3(0f, -Mathf.Deg2Rad * 90, 0f), new Vector3(1f, 1f, 1f), Color.yellow);
-
-        //importo mesa
-        path = Application.dataPath + "/Models/table/table.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        mesa = new GameObject("mesa");
-        InicializarObject(mesa, path, new Vector3(0f, 0f, -2.5f), new Vector3(0f, 0f, 0f), new Vector3(0.75f, 0.75f, 0.75f), new Color(0.298f, 0.184f, 0.1529f));
-
-        //importo silla1
-        path = Application.dataPath + "/Models/chair1/chair1.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        silla1 = new GameObject("silla1");
-        InicializarObject(silla1, path, new Vector3(0.9f, 0f, -2.5f), new Vector3(0f, Mathf.Deg2Rad*180, 0f), new Vector3(0.751f, 0.75f, 0.75f), Color.blue);
-
-        //importo silla2
-        path = Application.dataPath + "/Models/chair1/chair1.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        silla2 = new GameObject("silla2");
-        InicializarObject(silla2, path, new Vector3(-0.9f, 0f, -2.5f), new Vector3(0f, 0f, 0f), new Vector3(0.751f, 0.75f, 0.75f), Color.blue);
-
-        //importo silla3
-        path = Application.dataPath + "/Models/chair1/chair1.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        silla3 = new GameObject("silla3");
-        InicializarObject(silla3, path, new Vector3(0f, 0f, -1.6f), new Vector3(0f, Mathf.Deg2Rad * 90, 0f), new Vector3(0.751f, 0.75f, 0.75f), Color.blue);
-
-        //importo silla4
-        path = Application.dataPath + "/Models/chair1/chair1.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        silla4 = new GameObject("silla4");
-        InicializarObject(silla4, path, new Vector3(0f, 0f, -3.4f), new Vector3(0f, -Mathf.Deg2Rad * 90, 0f), new Vector3(0.751f, 0.75f, 0.75f), Color.blue);
-
-        //importo ducha
-        path = Application.dataPath + "/Models/shower/shower.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        ducha = new GameObject("ducha");
-        InicializarObject(ducha, path, new Vector3(-2.45f, 0f, 5.39f), new Vector3(0f, -Mathf.Deg2Rad * 0f, 0f), new Vector3(1f, 1f, 1f), Color.red);
-
-        //importo inodoro
-        path = Application.dataPath + "/Models/toilet2/toilet2.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        inodoro = new GameObject("inodoro");
-        InicializarObject(inodoro, path, new Vector3(0f, 0f, 5.57f), new Vector3(0f, Mathf.Deg2Rad * 90f, 0f), new Vector3(0.6f, 0.6f, 0.6f), Color.red);
-
-        //importo lavamanos
-        path = Application.dataPath + "/Models/sink/sink.obj";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Archivo .obj no encontrado en: " + path);
-            return;
-        }
-        lavamanos = new GameObject("lavamanos");
-        InicializarObject(lavamanos, path, new Vector3(2f, 0f, 5.61f), new Vector3(0f, Mathf.Deg2Rad * 90f, 0f), new Vector3(0.9f, 0.9f, 0.9f), Color.magenta);
 
     }
 
@@ -258,6 +88,10 @@ public class SceneManager : MonoBehaviour
             camaraIndex = (camaraIndex + 1) % 2;
         else if (Input.GetKeyDown("v"))
             AlternarVisibilidadParedes();
+        else if (Input.GetKeyDown("r"))
+            AlternarVisibilidadTecho();
+        else if (Input.GetKeyDown("f"))
+            AlternarVisibilidadPiso();
         else
         {
             if (camaraIndex == 0)
@@ -315,7 +149,7 @@ public class SceneManager : MonoBehaviour
 
                     //matriz con la que roto vectores al rededor del eje y
                     rotY = new Matrix4x4(
-                        new Vector4(Mathf.Cos(Mathf.Deg2Rad * Input.GetAxis("Horizontal")* Time.deltaTime * 100), 0f, Mathf.Sin(Mathf.Deg2Rad * Input.GetAxis("Horizontal") * Time.deltaTime * 100), 0f),
+                        new Vector4(Mathf.Cos(Mathf.Deg2Rad * Input.GetAxis("Horizontal") * Time.deltaTime * 100), 0f, Mathf.Sin(Mathf.Deg2Rad * Input.GetAxis("Horizontal") * Time.deltaTime * 100), 0f),
                         new Vector4(0f, 1f, 0f, 0f),
                         new Vector4(-Mathf.Sin(Mathf.Deg2Rad * Input.GetAxis("Horizontal") * Time.deltaTime * 100), 0f, Mathf.Cos(Mathf.Deg2Rad * Input.GetAxis("Horizontal") * Time.deltaTime * 100), 0f),
                         new Vector4(0f, 0f, 0f, 1f)
@@ -335,7 +169,254 @@ public class SceneManager : MonoBehaviour
             RecalcularMatricesVistaAll();
         }
     }
-    
+
+    private void AcomodarParedes()
+    {
+        //importo las paredes
+
+        //PARED 1
+        path = Application.dataPath + "/Models/Paredes/pared1_y_3.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        pared1 = new GameObject("pared1_y_3");
+        InicializarObject(pared1, path, new Vector3(0f, 0f, -6f), new Vector3(0f, Mathf.Deg2Rad * 90f, 0f), new Vector3(1f, 1f, 1f), new Color(0.82f, 0.74f, 0.63f));
+
+        //PARED 2
+        path = Application.dataPath + "/Models/Paredes/pared2.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        pared2 = new GameObject("pared2");
+        InicializarObject(pared2, path, new Vector3(-3f, 0f, 0f), new Vector3(0f, 0f, 0f), new Vector3(1f, 1f, 1f), new Color(0.82f, 0.74f, 0.63f));
+
+        //PARED 3
+        path = Application.dataPath + "/Models/Paredes/pared1_y_3.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        pared3 = new GameObject("pared3");
+        InicializarObject(pared3, path, new Vector3(0f, 0f, 6f), new Vector3(0f, Mathf.Deg2Rad * 90f, 0f), new Vector3(1f, 1f, 1f), new Color(0.82f, 0.74f, 0.63f));
+
+        //PARED 4
+        path = Application.dataPath + "/Models/Paredes/pared4.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        pared4 = new GameObject("pared4");
+        InicializarObject(pared4, path, new Vector3(3f, 3f, 0f), new Vector3(0f, Mathf.Deg2Rad * 180f, 0f), new Vector3(1f, -1f, 1f), new Color(0.82f, 0.74f, 0.63f));
+
+        //importo pared baño
+        path = Application.dataPath + "/Models/Paredes/paredBaño.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        paredBano = new GameObject("paredBaño");
+        InicializarObject(paredBano, path, new Vector3(0f, 3f, 4f), new Vector3(0f, Mathf.Deg2Rad * 90f, 0f), new Vector3(1f, -1f, 1f), new Color(0.82f, 0.74f, 0.63f));
+
+        //importo piso
+        path = Application.dataPath + "/Models/Paredes/piso_techo.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        piso = new GameObject("piso");
+        InicializarObject(piso, path, new Vector3(0f, -0.01f, 0f), new Vector3(0f, Mathf.Deg2Rad * 90f, 0f), new Vector3(1f, 1f, 1f), new Color(0.4f, 0.4f, 0.4f));
+
+        //importo techo
+        path = Application.dataPath + "/Models/Paredes/piso_techo.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        techo = new GameObject("techo");
+        InicializarObject(techo, path, new Vector3(0f, 3.01f, 0f), new Vector3(Mathf.Deg2Rad * 180f , Mathf.Deg2Rad * 90f, 0f), new Vector3(1f, 1f, 1f), new Color(0.7875f, 0.7106f, 0.6051f));
+    }
+
+    private void AcomodarLiving()
+    {
+        // importo cama a la escena
+        path = Application.dataPath + "/Models/bed/bed1.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        bed = new GameObject("bed");
+        InicializarObject(bed, path, new Vector3(-1.75f, 0f, 1.8f), new Vector3(0f, -Mathf.Deg2Rad * 90, 0f), new Vector3(0.85f, 0.85f, 0.85f), new Color(0.55f, 0.3f, 0.2f));
+
+
+        //importo sillon a la escena
+        path = Application.dataPath + "/Models/sofa/sofa.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        sofa = new GameObject("sofa");
+        InicializarObject(sofa, path, new Vector3(-2.37f, 0f, -0.75f), new Vector3(0f, 0f, 0f), new Vector3(0.75f, 0.75f, 0.75f), new Color(0.3f, 0.18f, 0.12f));
+
+
+        //importo mesa
+        path = Application.dataPath + "/Models/table/table.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        mesa = new GameObject("mesa");
+        InicializarObject(mesa, path, new Vector3(0f, 0f, -2.5f), new Vector3(0f, 0f, 0f), new Vector3(0.75f, 0.75f, 0.75f), new Color(0.4f, 0.25f, 0.1f));
+
+        //importo silla1
+        path = Application.dataPath + "/Models/chair1/chair1.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        silla1 = new GameObject("silla1");
+        InicializarObject(silla1, path, new Vector3(0.9f, 0f, -2.5f), new Vector3(0f, Mathf.Deg2Rad * 180, 0f), new Vector3(0.751f, 0.75f, 0.75f), new Color(0.45f, 0.3f, 0.15f));
+
+        //importo silla2
+        path = Application.dataPath + "/Models/chair1/chair1.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        silla2 = new GameObject("silla2");
+        InicializarObject(silla2, path, new Vector3(-0.9f, 0f, -2.5f), new Vector3(0f, 0f, 0f), new Vector3(0.751f, 0.75f, 0.75f), new Color(0.45f, 0.3f, 0.15f));
+
+        //importo silla3
+        path = Application.dataPath + "/Models/chair1/chair1.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        silla3 = new GameObject("silla3");
+        InicializarObject(silla3, path, new Vector3(0f, 0f, -1.6f), new Vector3(0f, Mathf.Deg2Rad * 90, 0f), new Vector3(0.751f, 0.75f, 0.75f), new Color(0.45f, 0.3f, 0.15f));
+
+        //importo silla4
+        path = Application.dataPath + "/Models/chair1/chair1.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        silla4 = new GameObject("silla4");
+        InicializarObject(silla4, path, new Vector3(0f, 0f, -3.4f), new Vector3(0f, -Mathf.Deg2Rad * 90, 0f), new Vector3(0.751f, 0.75f, 0.75f), new Color(0.45f, 0.3f, 0.15f));
+
+        //importo armario
+        path = Application.dataPath + "/Models/Wardrobe1/Wardrobe1.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        armario = new GameObject("armario");
+        InicializarObject(armario, path, new Vector3(2.5f, 0f, 2.5f), new Vector3(0f, Mathf.Deg2Rad * 180, 0f), new Vector3(1f, 1f, 1f), new Color(0.42f, 0.26f, 0.14f));
+
+        //importo estante
+        path = Application.dataPath + "/Models/Wardrobe2/Wardrobe2.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        estante = new GameObject("estante");
+        InicializarObject(estante, path, new Vector3(-1f, 0f, 3.5f), new Vector3(0f, Mathf.Deg2Rad * 90, 0f), new Vector3(1f, 1f, 1f), new Color(0.42f, 0.26f, 0.14f));
+
+    }
+    private void AcomodarCocina()
+    {
+        //importo bacha cocina
+        path = Application.dataPath + "/Models/KitchenCabinetRounded/KitchenCabinetRounded.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        bacha = new GameObject("bacha");
+        InicializarObject(bacha, path, new Vector3(-1.73f, 0f, -4.69f), new Vector3(0f, -Mathf.Deg2Rad * 90, 0f), new Vector3(1f, 1f, 1f), new Color(0.45f, 0.28f, 0.15f));
+
+        //importo horno
+        path = Application.dataPath + "/Models/KitchenStoveWithOven/KitchenStoveWithOven.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        horno = new GameObject("horno");
+        InicializarObject(horno, path, new Vector3(-0.10f, 0f, -5.38f), new Vector3(0f, -Mathf.Deg2Rad * 90, 0f), new Vector3(1f, 1f, 1f), new Color(0.25f, 0.25f, 0.25f));
+
+        //importo gabinete cocina
+        path = Application.dataPath + "/Models/KitchenCabinet1/KitchenCabinet1.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        gabineteCocina1 = new GameObject("gabineteCocina");
+        InicializarObject(gabineteCocina1, path, new Vector3(0.88f, 0f, -5.38f), new Vector3(0f, -Mathf.Deg2Rad * 90, 0f), new Vector3(1f, 1f, 1f), new Color(0.55f, 0.38f, 0.2f));
+
+        //importo heladera
+        path = Application.dataPath + "/Models/Fridge/Fridge.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        heladera = new GameObject("heladera");
+        InicializarObject(heladera, path, new Vector3(1.79f, 0f, -5.39f), new Vector3(0f, -Mathf.Deg2Rad * 90, 0f), new Vector3(1f, 1f, 1f), new Color(0.75f, 0.75f, 0.78f));
+    }
+
+    private void AcomodarBano()
+    {
+
+        //importo ducha
+        path = Application.dataPath + "/Models/shower/shower.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        ducha = new GameObject("ducha");
+        InicializarObject(ducha, path, new Vector3(-2.45f, 0f, 5.39f), new Vector3(0f, -Mathf.Deg2Rad * 0f, 0f), new Vector3(1f, 1f, 1f), new Color(0.55f, 0.7f, 0.85f));
+
+        //importo inodoro
+        path = Application.dataPath + "/Models/toilet2/toilet2.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        inodoro = new GameObject("inodoro");
+        InicializarObject(inodoro, path, new Vector3(0f, 0f, 5.57f), new Vector3(0f, Mathf.Deg2Rad * 90f, 0f), new Vector3(0.6f, 0.6f, 0.6f), new Color(0.9f, 0.92f, 0.95f));
+
+        //importo lavamanos
+        path = Application.dataPath + "/Models/sink/sink.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        lavamanos = new GameObject("lavamanos");
+        InicializarObject(lavamanos, path, new Vector3(2f, 0f, 5.61f), new Vector3(0f, Mathf.Deg2Rad * 90f, 0f), new Vector3(0.9f, 0.9f, 0.9f), new Color(0.9f, 0.92f, 0.95f));
+    }
+
     private void AlternarVisibilidadParedes()
     {
         pared1.GetComponent<Renderer>().enabled = !pared1.GetComponent<Renderer>().enabled;
@@ -343,6 +424,17 @@ public class SceneManager : MonoBehaviour
         pared3.GetComponent<Renderer>().enabled = !pared3.GetComponent<Renderer>().enabled;
         pared4.GetComponent<Renderer>().enabled = !pared4.GetComponent<Renderer>().enabled;
     }
+
+    private void AlternarVisibilidadTecho()
+    {
+        techo.GetComponent<Renderer>().enabled = !techo.GetComponent<Renderer>().enabled;
+    }
+
+    private void AlternarVisibilidadPiso()
+    {
+        piso.GetComponent<Renderer>().enabled = !piso.GetComponent<Renderer>().enabled;
+    }
+
     private void RecalcularMatricesVistaAll()
     {
         RecalcularMatricesVista(bed);
@@ -356,6 +448,8 @@ public class SceneManager : MonoBehaviour
         RecalcularMatricesVista(silla2);
         RecalcularMatricesVista(silla3);
         RecalcularMatricesVista(silla4);
+        RecalcularMatricesVista(armario);
+        RecalcularMatricesVista(estante);
         RecalcularMatricesVista(ducha);
         RecalcularMatricesVista(inodoro);
         RecalcularMatricesVista(lavamanos);
@@ -363,6 +457,11 @@ public class SceneManager : MonoBehaviour
         RecalcularMatricesVista(pared2);
         RecalcularMatricesVista(pared3);
         RecalcularMatricesVista(pared4);
+        RecalcularMatricesVista(paredBano);
+        RecalcularMatricesVista(piso);
+        RecalcularMatricesVista(techo);
+
+
 
     }
     private void InicializarObject(GameObject obj, string path, Vector3 newPosition, Vector3 newRotation, Vector3 newScale, Color color)
