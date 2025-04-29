@@ -235,9 +235,9 @@ public class SceneManager : MonoBehaviour
 
 
                 //anulo componentes y para que solo caminen sobre plano xz
-                fp_pos = fp_pos + new Vector3(Input.GetAxis("Vertical") * 0.01f * fp_forward.x + Input.GetAxis("Horizontal") * 0.01f * fp_right.x,
+                fp_pos = fp_pos + new Vector3(Input.GetAxis("Vertical") * 3f * Time.deltaTime * fp_forward.x + Input.GetAxis("Horizontal") * 3f * Time.deltaTime * fp_right.x,
                     0,
-                    Input.GetAxis("Vertical") * 0.01f * fp_forward.z + Input.GetAxis("Horizontal") * 0.01f * fp_right.z);
+                    Input.GetAxis("Vertical") * 3f * Time.deltaTime * fp_forward.z + Input.GetAxis("Horizontal") * 3f * Time.deltaTime * fp_right.z);
 
 
                 //roto camara, calculo de nuevo los vectores en caso que hayan cambiado por el 
@@ -248,14 +248,14 @@ public class SceneManager : MonoBehaviour
                 if ((inputY > 0 && Vector3.Angle(fp_forward, new Vector3(0, 1, 0)) > 25f) ||
                     (inputY < 0 && Vector3.Angle(fp_forward, new Vector3(0, -1, 0)) > 25f))
                 {
-                    Quaternion rotVertical = Quaternion.AngleAxis(-300f * Time.deltaTime * inputY, fp_right);
+                    Quaternion rotVertical = Quaternion.AngleAxis(-100f * Time.deltaTime * inputY, fp_right);
                     fp_forward = (rotVertical * fp_forward).normalized;
                 }
 
                 //roto camara horizontalmente
                 if (inputX != 0)
                 {
-                    Quaternion rotHorizontal = Quaternion.AngleAxis(300f * Time.deltaTime * inputX, new Vector3(0, 1, 0));
+                    Quaternion rotHorizontal = Quaternion.AngleAxis(100f * Time.deltaTime * inputX, new Vector3(0, 1, 0));
                     fp_forward = (rotHorizontal * fp_forward).normalized;
                     fp_right = (rotHorizontal * fp_right).normalized;
                 }
@@ -266,11 +266,11 @@ public class SceneManager : MonoBehaviour
                 //Zoom in o zoom out
                 if (Input.GetKey("left shift") && Vector3.Distance(orb_pos, orb_target) > 2f)
                 {
-                    orb_pos = orb_pos + (orb_target - orb_pos).normalized * 0.01f;
+                    orb_pos = orb_pos + (orb_target - orb_pos).normalized * 5f * Time.deltaTime;
                 }
                 if (Input.GetKey("left ctrl"))
                 {
-                    orb_pos = orb_pos - (orb_target - orb_pos).normalized * 0.01f;
+                    orb_pos = orb_pos - (orb_target - orb_pos).normalized * 5f * Time.deltaTime;
                 }
 
 
@@ -281,9 +281,9 @@ public class SceneManager : MonoBehaviour
 
                     //matriz con la que roto vectores al rededor del eje y
                     rotY = new Matrix4x4(
-                        new Vector4(Mathf.Cos(Mathf.Deg2Rad * Input.GetAxis("Horizontal")), 0f, Mathf.Sin(Mathf.Deg2Rad * Input.GetAxis("Horizontal")), 0f),
+                        new Vector4(Mathf.Cos(Mathf.Deg2Rad * Input.GetAxis("Horizontal")* Time.deltaTime * 100), 0f, Mathf.Sin(Mathf.Deg2Rad * Input.GetAxis("Horizontal") * Time.deltaTime * 100), 0f),
                         new Vector4(0f, 1f, 0f, 0f),
-                        new Vector4(-Mathf.Sin(Mathf.Deg2Rad * Input.GetAxis("Horizontal")), 0f, Mathf.Cos(Mathf.Deg2Rad * Input.GetAxis("Horizontal")), 0f),
+                        new Vector4(-Mathf.Sin(Mathf.Deg2Rad * Input.GetAxis("Horizontal") * Time.deltaTime * 100), 0f, Mathf.Cos(Mathf.Deg2Rad * Input.GetAxis("Horizontal") * Time.deltaTime * 100), 0f),
                         new Vector4(0f, 0f, 0f, 1f)
                     );
                     orb_pos = rotY.MultiplyPoint3x4(orb_pos);
@@ -294,7 +294,7 @@ public class SceneManager : MonoBehaviour
                     (Input.GetAxis("Vertical") > 0 && Vector3.Angle((orb_target - orb_pos), new Vector3(0, -1, 0)) > 0.5f))
                 {
                     //Rotacion vertical
-                    Quaternion rotVertical = Quaternion.AngleAxis(300f * Time.deltaTime * Input.GetAxis("Vertical"), orb_right);
+                    Quaternion rotVertical = Quaternion.AngleAxis(100f * Time.deltaTime * Input.GetAxis("Vertical"), orb_right);
                     orb_pos = (rotVertical * orb_pos);
                 }
             }
@@ -445,7 +445,7 @@ public class SceneManager : MonoBehaviour
 
         forward = forward.normalized;
         right = right.normalized;
-        Vector3 up = Vector3.Cross(right, forward).normalized;
+        Vector3 up = -Vector3.Cross(right, forward).normalized;
 
 
 
@@ -466,7 +466,7 @@ public class SceneManager : MonoBehaviour
 
         Vector3 forward = (-pos + target).normalized;
         right = right.normalized;
-        Vector3 up = Vector3.Cross(right, forward).normalized;
+        Vector3 up = -Vector3.Cross(right, forward).normalized;
 
         Matrix4x4 viewMatrix = new Matrix4x4(
             new Vector4(right.x, right.y, right.z, -Vector3.Dot(right, pos)),
