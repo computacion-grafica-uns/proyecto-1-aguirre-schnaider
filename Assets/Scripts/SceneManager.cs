@@ -499,6 +499,8 @@ public class SceneManager : MonoBehaviour
         pared2.GetComponent<Renderer>().enabled = !pared2.GetComponent<Renderer>().enabled;
         pared3.GetComponent<Renderer>().enabled = !pared3.GetComponent<Renderer>().enabled;
         pared4.GetComponent<Renderer>().enabled = !pared4.GetComponent<Renderer>().enabled;
+        paredBano.GetComponent<Renderer>().enabled = !paredBano.GetComponent<Renderer>().enabled;
+
     }
 
     private void AlternarVisibilidadTecho()
