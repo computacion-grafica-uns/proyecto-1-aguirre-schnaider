@@ -29,6 +29,11 @@ public class SceneManager : MonoBehaviour
     private GameObject ducha;
     private GameObject inodoro;
     private GameObject lavamanos;
+    private GameObject calavera;
+    private GameObject sombrero;
+    private GameObject lentes;
+    private GameObject planta1;
+    private GameObject planta2;
     private GameObject pared1;
     private GameObject pared2;
     private GameObject pared3;
@@ -73,7 +78,7 @@ public class SceneManager : MonoBehaviour
         AcomodarLiving();
         AcomodarCocina();
         AcomodarBano();
-       
+        AcomodarCalavera();
 
 
 
@@ -339,6 +344,26 @@ public class SceneManager : MonoBehaviour
         estante = new GameObject("estante");
         InicializarObject(estante, path, new Vector3(-1f, 0f, 3.5f), new Vector3(0f, Mathf.Deg2Rad * 90, 0f), new Vector3(1f, 1f, 1f), new Color(0.42f, 0.26f, 0.14f));
 
+        //importo plantas
+        path = Application.dataPath + "/Models/plant/plant.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        planta1 = new GameObject("planta1");
+        InicializarObject(planta1, path, new Vector3(2.5f, 0f, -1.7f), new Vector3(0f, Mathf.Deg2Rad * 180, 0f), new Vector3(0.014f, 0.03f, 0.014f), new Color(0.25f, 0.5f, 0.2f));
+
+        //importo plantas
+        path = Application.dataPath + "/Models/plant/plant.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        planta2 = new GameObject("planta2");
+        InicializarObject(planta2, path, new Vector3(-2.5f, 0f, -2.50f), new Vector3(0f, Mathf.Deg2Rad * 180, 0f), new Vector3(0.014f, 0.03f, 0.014f), new Color(0.25f, 0.5f, 0.2f));
+
     }
     private void AcomodarCocina()
     {
@@ -417,6 +442,57 @@ public class SceneManager : MonoBehaviour
         InicializarObject(lavamanos, path, new Vector3(2f, 0f, 5.61f), new Vector3(0f, Mathf.Deg2Rad * 90f, 0f), new Vector3(0.9f, 0.9f, 0.9f), new Color(0.9f, 0.92f, 0.95f));
     }
 
+    private void AcomodarCalavera()
+    {
+        //objeto jerarquico por lo que es tratado diferente
+        path = Application.dataPath + "/Models/objetoJerarquico/skull.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        calavera = new GameObject("calavera");
+        Matrix4x4 modelMatrixCalavera = InicializarObject(calavera, path, new Vector3(-1f, 1.37f, 3.49f), new Vector3(0f, Mathf.Deg2Rad * 180, 0f), new Vector3(0.05f, 0.05f, 0.05f), new Color(1f, 1f, 1f));
+
+        //defino la matriz de modelado del sombrero en base a la matriz de modelado de la calavera
+        path = Application.dataPath + "/Models/objetoJerarquico/hat.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        sombrero = new GameObject("sombrero");
+        sombrero.AddComponent<MeshFilter>();
+        sombrero.AddComponent<MeshRenderer>();
+        CreateMaterial(sombrero);
+        ObjParser.Parse(sombrero, path);
+        //creo la modelMatrix a partir de la modelMatrix de la calavera
+        Matrix4x4 modelMatrixSombrero = modelMatrixCalavera * CreateModelMatrix(new Vector3(-3.2f,6f, 3.2f), new Vector3(-Mathf.Deg2Rad * 90, 0f ,-Mathf.Deg2Rad * 45), new Vector3(2.7f, 2.7f, 2.7f));
+        sombrero.GetComponent<Renderer>().material.SetMatrix("_ModelMatrix", modelMatrixSombrero);
+        AsignarColor(sombrero, new Color(0f,0f,0f));
+        RecalcularMatricesVista(sombrero);
+        
+        
+        //defino la matriz de modelado del sombrero en base a la matriz de modelado de la calavera
+        path = Application.dataPath + "/Models/objetoJerarquico/sunglasses1.obj";
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Archivo .obj no encontrado en: " + path);
+            return;
+        }
+        lentes = new GameObject("lentes");
+        lentes.AddComponent<MeshFilter>();
+        lentes.AddComponent<MeshRenderer>();
+        CreateMaterial(lentes);
+        ObjParser.Parse(lentes, path);
+        //creo la modelMatrix a partir de la modelMatrix de la calavera
+        Matrix4x4 modelMatrixLentes = modelMatrixCalavera * CreateModelMatrix(new Vector3(0f, 3f, 1.1f), new Vector3(0, 0f, 0), new Vector3(3.6f, 3f, 3f));
+        lentes.GetComponent<Renderer>().material.SetMatrix("_ModelMatrix", modelMatrixLentes);
+        AsignarColor(lentes, new Color(0f, 0f, 0f));
+        RecalcularMatricesVista(lentes);
+        
+    }
+
     private void AlternarVisibilidadParedes()
     {
         pared1.GetComponent<Renderer>().enabled = !pared1.GetComponent<Renderer>().enabled;
@@ -453,6 +529,11 @@ public class SceneManager : MonoBehaviour
         RecalcularMatricesVista(ducha);
         RecalcularMatricesVista(inodoro);
         RecalcularMatricesVista(lavamanos);
+        RecalcularMatricesVista(calavera);
+        RecalcularMatricesVista(sombrero);
+        RecalcularMatricesVista(lentes);
+        RecalcularMatricesVista(planta1);
+        RecalcularMatricesVista(planta2);
         RecalcularMatricesVista(pared1);
         RecalcularMatricesVista(pared2);
         RecalcularMatricesVista(pared3);
@@ -464,14 +545,14 @@ public class SceneManager : MonoBehaviour
 
 
     }
-    private void InicializarObject(GameObject obj, string path, Vector3 newPosition, Vector3 newRotation, Vector3 newScale, Color color)
+    private Matrix4x4 InicializarObject(GameObject obj, string path, Vector3 newPosition, Vector3 newRotation, Vector3 newScale, Color color)
     {
         // Defino posición
         obj.AddComponent<MeshFilter>();
         obj.AddComponent<MeshRenderer>();
         CreateMaterial(obj);
         ObjParser.Parse(obj, path);
-        InicializarMatrices(obj, newPosition, newRotation, newScale, color);
+        return InicializarMatrices(obj, newPosition, newRotation, newScale, color);
     }
     private void AsignarColor(GameObject obj, Color color)
     {
@@ -558,7 +639,7 @@ public class SceneManager : MonoBehaviour
         Matrix4x4 projectionMatrix = CalculatePerspectiveProjectionMatrix(fov, aspectRatio, nearClipPlane, farClipPlane);
         obj.GetComponent<Renderer>().material.SetMatrix("_ProjectionMatrix", projectionMatrix);
     }
-    private void InicializarMatrices(GameObject obj, Vector3 newPosition, Vector3 newRotation, Vector3 newScale, Color color)
+    private Matrix4x4 InicializarMatrices(GameObject obj, Vector3 newPosition, Vector3 newRotation, Vector3 newScale, Color color)
     {
         //calculamos la matriz de modelado
         Matrix4x4 modelMatrix = CreateModelMatrix(newPosition, newRotation, newScale);
@@ -574,6 +655,8 @@ public class SceneManager : MonoBehaviour
 
         Matrix4x4 projectionMatrix = CalculatePerspectiveProjectionMatrix(fov, aspectRatio, nearClipPlane, farClipPlane);
         obj.GetComponent<Renderer>().material.SetMatrix("_ProjectionMatrix", projectionMatrix);
+
+        return modelMatrix;
     }
 
     private Matrix4x4 CreateViewMatrix(Vector3 pos, Vector3 forward, Vector3 right)
